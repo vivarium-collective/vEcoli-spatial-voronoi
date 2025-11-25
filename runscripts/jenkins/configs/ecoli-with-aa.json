@@ -1,0 +1,31 @@
+{
+    "experiment_id": "daily-with-aa",
+    "single_daughters": true,
+    "generations": 8,
+    "fail_at_max_duration": true,
+    "sim_data_path": null,
+    "lineage_seed": 100,
+    "emitter": "parquet",
+    "emitter_arg": {
+        "out_dir": "/scratch/groups/mcovert/vecoli",
+        "threaded": false
+    },
+    "analysis_options": {
+        "single": {"mass_fraction_summary": {}},
+        "multiseed": {"protein_counts_validation": {}},
+        "multivariant": {"doubling_time_hist": {"skip_n_gens": 0}, "doubling_time_line": {}}
+    },
+    "skip_baseline": true,
+    "variants": {
+        "condition": {"condition": {"value": ["with_aa"]}}
+    },
+    "sherlock": {
+        "container_image": "container-image",
+        "build_image": true,
+        "hyperqueue": true,
+        "jenkins": true
+    },
+    "parca_options": {
+        "cpus": 4
+    }
+}

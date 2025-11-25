@@ -1,0 +1,69 @@
+# Modified from GitHub Actions template
+
+name: QA
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  Pytest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: "0.7.12"
+    - name: Install model
+      run: USE_CYTHON=1 uv sync --frozen --extra dev
+    - name: Run ParCa
+      run: |
+        uv run --env-file .env runscripts/parca.py \
+          --config configs/gha_pytest.json
+    - name: Extract tetracycline gene regulation parameters
+      run: |
+        uv run --env-file .env data/marA_binding/get_TU_ID.py \
+          -s out/kb/simData.cPickle
+    - name: Test with pytest
+      run: |
+        uv run --env-file .env pytest --durations=0
+  Mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: "0.7.12"
+    - name: Install model
+      run: USE_CYTHON=1 uv sync --frozen --extra dev
+    - name: Mypy
+      run: |
+        uv run mypy
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        version: "0.7.12"
+    - name: Install model
+      run: USE_CYTHON=1 uv sync --frozen --extra dev
+    - name: Ruff
+      run: |
+        uv run ruff check doc ecoli wholecell runscripts validation reconstruction

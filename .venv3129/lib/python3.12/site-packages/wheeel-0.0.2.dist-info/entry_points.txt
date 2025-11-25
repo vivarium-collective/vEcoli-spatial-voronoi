@@ -1,0 +1,2 @@
+[console_scripts]
+wheeel = wheel.cli:main

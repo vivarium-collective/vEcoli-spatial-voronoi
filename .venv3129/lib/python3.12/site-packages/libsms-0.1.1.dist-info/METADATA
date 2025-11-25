@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: libsms
+Version: 0.1.1
+Summary: Interacting with the Simulating Microbial Systems (SMS Atlantis) API
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: httpx>=0.28.1
+Requires-Dist: orjson>=3.11.1
+Requires-Dist: polars[all]>=1.32.2
+Requires-Dist: sphinx>=8.2.3
+Requires-Dist: sphinx-autodoc-typehints>=3.2.0
+Requires-Dist: sphinx-rtd-theme>=3.0.2

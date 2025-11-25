@@ -1,0 +1,10 @@
+#!/bin/sh
+'''exec' '/Users/mayaabdalla/PycharmProjects/vEcoli CovertLab1/.venv3129/bin/python3' "$0" "$@"
+' '''
+# -*- coding: UTF-8 -*-
+from __future__ import print_function, division, absolute_import
+
+from numba.misc.numba_entry import main
+
+if __name__ == "__main__":
+    main()
