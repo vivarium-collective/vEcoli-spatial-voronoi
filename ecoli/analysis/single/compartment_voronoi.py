@@ -125,5 +125,3 @@ def plot(
     print(f"\nSaved Voronoi biomass plot to:\n {full_path}\n")
 
     plt.close()
-
-#TODO: push to github, the repo is not made yet - branch of a branch

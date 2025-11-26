@@ -97,13 +97,15 @@ def plot(
 
     flagella_masses = find_mass_group(flagella_monomers)
 
-
     #Function because have such tiny numbers and voronoi cannot go 0 or under
+        #Voronoi function cannot hangle zero or negative values
+        #this function converts the value to a float, returns the original value unless extremely tiny
+        #if less than 1e20, force it to be 1e20
     def safe(x):
         x = float(x)
         return x if x > 1e-20 else 1e-20
 
-
+#listener/compartment masses
     extracellular = voronoi_data["listeners__mass__extracellular_mass"]
     periplasm = voronoi_data["listeners__mass__periplasm_mass"]
     cytosol = voronoi_data["listeners__mass__cytosol_mass"]
@@ -113,6 +115,8 @@ def plot(
     membrane = voronoi_data["listeners__mass__membrane_mass"]
     inner_mem = voronoi_data["listeners__mass__inner_membrane_mass"]
 
+
+#Flagella Subunits
     FLGG_ROD = find_protein_mass("FLGG-FLAGELLAR-MOTOR-ROD-PROTEIN[o]")
 
     FLGB_ROD = find_protein_mass("FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
@@ -127,35 +131,33 @@ def plot(
 
     FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[m]")
 
+
+
     dic_initial = {
             "extracellular":safe(extracellular[0]),
             "periplasm":safe(periplasm[0]),
-            #"cytosol":safe(cytosol[0]),
+           # "cytosol":safe(cytosol[0]),
             "pilus":safe(pilus[0]),
-
             "outer_mem": {
-                'total_outer_mem':outer_mem[0],
+                'outer_membrane':safe(outer_mem[0]),
                 'FLGG_ROD_Protein':safe(FLGG_ROD[0]),
                 'placeholder': safe(1e-50),
             },
-
-            "projection": {
-                'total_projection':projection[0],
+            "proj": {
+                'projection': safe(projection[0]),
                 'FLGB_ROD':safe(FLGB_ROD[0]),
                 'FLGC_ROD':safe(FLGC_ROD[0]),
                 'FLGF_ROD':safe(FLGF_ROD[0]),
                 'FLGH_RING':safe(FLGH_RING[0]),
                 'FLGI_RING':safe(FLGI_RING[0]),
             },
-
-            "membrane": {
-                'total_membrane':safe(membrane[0]),
+            "mem": { #transmembrane/membrane embedded
+                'membrane':safe(membrane[0]),
                 'FLIN_SWITCH':safe(FLIN_SWITCH[0]),
                 'placeholder': safe(1e-50),
             },
-
-            "inner_mem": {
-                'total_inner_membrane':safe(inner_mem[0]),
+            "inner": {
+                'inner_membrane':safe(inner_mem[0]),
                 'FLGF_RING':safe(FLGF_RING[0]),
                 'FLIG_SWITCH':safe(FLIG_SWITCH[0]),
                 'FLIM_SWITCH':safe(FLIM_SWITCH[0]),
@@ -164,28 +166,28 @@ def plot(
     dic_final = {
         "extracellular":safe(extracellular[-1]),
         "periplasm":safe(periplasm[-1]),
-        #"cytosol":safe(cytosol[-1]),
+       # "cytosol":safe(cytosol[-1]),
         "pilus":safe(pilus[-1]),
         "outer_mem": {
-            'total_outer_mem':safe(outer_mem[-1]),
+            'outer_membrane':safe(outer_mem[-1]),
             'FLGG_ROD_Protein':safe(FLGG_ROD[-1]),
             'placeholder': safe(1e-50),
         },
-        "projection": {
-            'total_projection':safe(projection[-1]),
+        "proj": {
+            'projection':safe(projection[-1]),
             'FLGB_ROD':safe(FLGB_ROD[-1]),
             'FLGC_ROD':safe(FLGC_ROD[-1]),
             'FLGF_ROD':safe(FLGF_ROD[-1]),
             'FLGH_RING':safe(FLGH_RING[-1]),
             'FLGI_RING':safe(FLGI_RING[-1]),
         },
-        "membrane": {
-            'total_membrane':safe(membrane[-1]),
+        "mem": { #transmembrane/membrane embedded
+            'membrane':safe(membrane[-1]),
             'FLIN_SWITCH':safe(FLIN_SWITCH[-1]),
             'placeholder': safe(1e-50),
             },
-        "inner_mem": {
-            'total_inner_membrane':safe(inner_mem[-1]),
+        "inner": {
+            'inner_membrane':safe(inner_mem[-1]),
             'FLGF_RING':safe(FLGF_RING[-1]),
             'FLIG_SWITCH':safe(FLIG_SWITCH[-1]),
             'FLIM_SWITCH':safe(FLIM_SWITCH[-1]),
