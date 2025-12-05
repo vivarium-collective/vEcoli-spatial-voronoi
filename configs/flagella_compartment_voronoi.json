@@ -1,5 +1,5 @@
 {
-    "experiment_id": "fim_flagella_compartment_voronoi",
+    "experiment_id": "flagella_compartment_voronoi",
     "suffix_time": false,
     "initial_global_time": 0.0,
     "fail_at_total_time": false,
@@ -12,6 +12,6 @@
         "out_dir": "out"
     },
     "analysis_options": {
-        "single": {"fim_flagella_compartment_voronoi": {}}
+        "single": {"flagella_compartment_voronoi": {}}
     }
 }

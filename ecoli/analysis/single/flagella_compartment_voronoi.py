@@ -76,11 +76,11 @@ def plot(
         temp_counts = bulk_molecule_counts[:, temp_index]
         return (units.multiply(temp_counts, mw_monomer) / nAvogadro).asNumber(units.fg)
 
-    def find_mass_group(monomer_ids):
-        total = np.zeros(len(bulk_molecule_counts))
-        for monomer in monomer_ids:
-            total += find_protein_mass(monomer)
-        return total
+    # def find_mass_group(monomer_ids):
+    #     total = np.zeros(len(bulk_molecule_counts))
+    #     for monomer in monomer_ids:
+    #         total += find_protein_mass(monomer)
+    #     return total
 
     flagella_monomers = [
         "FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
@@ -93,9 +93,31 @@ def plot(
         "FLIG-FLAGELLAR-SWITCH-PROTEIN[i]",
         "FLIM-FLAGELLAR-C-RING-SWITCH[i]",
         "FLIN-FLAGELLAR-C-RING-SWITCH[m]",
+        "G7028-MONOMER[i]",
+        "G378-MONOMER[c]",
+        "G377-MONOMER[c]",
+        "G370-MONOMER[i]",
+        "EG11977-MONOMER[i]",
+        "EG11976-MONOMER[j]",
+        "EG11975-MONOMER[i]",
+        "EG11656-MONOMER[c]",
+        "EG11224-MONOMER[j]",
+       # "CPLX0-7451[j]",
+        "MOTA-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
+        "MOTB-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
+        "EG11346-MONOMER[p]",
+        "EG10322-MONOMER[j]",
+        #"FLAGELLAR-MOTOR-COMPLEX[j]",
+        "G361-MONOMER[c]",
+        "EG11967-MONOMER[e]",
+        "EG11545-MONOMER[e]",
+        "EG10321-MONOMER[e]",
+        "EG10841-MONOMER[e]",
+        #"CPLX0-7452[j]" #flagellum
     ]
 
-    flagella_masses = find_mass_group(flagella_monomers)
+
+    #flagella_masses = find_mass_group(flagella_monomers)
 
     #Function because have such tiny numbers and voronoi cannot go 0 or under
         #Voronoi function cannot hangle zero or negative values
@@ -130,13 +152,58 @@ def plot(
     FLIM_SWITCH = find_protein_mass("FLIM-FLAGELLAR-C-RING-SWITCH[i]")
 
     FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[m]")
+    FlhB = find_protein_mass("G7028-MONOMER[i]")
 
+#cytosol flagella subunits
+    FliJ = find_protein_mass("G378-MONOMER[c]")
+    Flil = find_protein_mass("G377-MONOMER[c]")
+    FliH = find_protein_mass("EG11656-MONOMER[c]")
+    FlgE = find_protein_mass("G361-MONOMER[c]")
+
+#inner membrane
+    FlhA = find_protein_mass("G370-MONOMER[i]")
+    FliR = find_protein_mass("EG11977-MONOMER[i]")
+    FliP = find_protein_mass("EG11975-MONOMER[i]")
+    MotA = find_protein_mass("MOTA-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]")
+    MotB = find_protein_mass("MOTB-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]")
+
+#projection
+    FliQ = find_protein_mass("EG11976-MONOMER[j]")
+    FliO = find_protein_mass("EG11224-MONOMER[j]")
+   # Flg_Export_app = find_protein_mass("CPLX0-7451[j]")
+    FliL = find_protein_mass("EG10322-MONOMER[j]")
+  #  Flg_Motor = find_protein_mass("FLAGELLAR-MOTOR-COMPLEX[j]")
+   # Flagellum = find_protein_mass("CPLX0-7452[j]")
+
+#periplasm
+    FliE = find_protein_mass("EG11346-MONOMER[p]")
+
+#extracellular
+    FlgK = find_protein_mass("EG11967-MONOMER[e]")
+    FlgL = find_protein_mass("EG11545-MONOMER[e]")
+    FliC = find_protein_mass("EG10321-MONOMER[e]")
+    FliD = find_protein_mass("EG10841-MONOMER[e]")
 
 
     dic_initial = {
-            "extracellular":safe(extracellular[0]),
-            "periplasm":safe(periplasm[0]),
-           # "cytosol":safe(cytosol[0]),
+            "extracell": {
+                'extracellular': safe(extracellular[0]),
+                'Flgk': safe(FlgK[0]),
+                'FlgL': safe(FlgL[0]),
+                'FliC': safe(FliC[0]),
+                'FliD': safe(FliD[0]),
+            },
+            "peri": {
+               'periplasm':safe(periplasm[0]),
+                'FliE': safe(FliE[0]),
+                },
+            # "cyt": {
+            #     'cytosol': safe(cytosol[0]),
+            #     'FliJ': safe(FliJ[0]),
+            #     'Flil': safe(Flil[0]),
+            #     'FliH': safe(FliH[0]),
+            #     'FlgE': safe(FlgE[0]),
+           # },
             "pilus":safe(pilus[0]),
             "outer_mem": {
                 'outer_membrane':safe(outer_mem[0]),
@@ -150,6 +217,12 @@ def plot(
                 'FLGF_ROD':safe(FLGF_ROD[0]),
                 'FLGH_RING':safe(FLGH_RING[0]),
                 'FLGI_RING':safe(FLGI_RING[0]),
+                'FliQ': safe(FliQ[0]),
+                'FliO': safe(FliO[0]),
+               # 'Flg_export_app': safe(Flg_Export_app[0]),
+                'FliL': safe(FliL[0]),
+             #   'Flg_Motor': safe(Flg_Motor[0]),
+              #  'Flagellum': safe(Flagellum[0]),
             },
             "mem": { #transmembrane/membrane embedded
                 'membrane':safe(membrane[0]),
@@ -161,12 +234,33 @@ def plot(
                 'FLGF_RING':safe(FLGF_RING[0]),
                 'FLIG_SWITCH':safe(FLIG_SWITCH[0]),
                 'FLIM_SWITCH':safe(FLIM_SWITCH[0]),
+                'FlhB':safe(FlhB[0]),
+                'FlhA': safe(FlhA[0]),
+                'FliR': safe(FliR[0]),
+                'FliP': safe(FliP[0]),
+                'MotA': safe(MotA[0]),
+                'MotB': safe(MotB[0]),
             }
     }
     dic_final = {
-        "extracellular":safe(extracellular[-1]),
-        "periplasm":safe(periplasm[-1]),
-       # "cytosol":safe(cytosol[-1]),
+        "extracell": {
+                'extracellular': safe(extracellular[-1]),
+                'Flgk': safe(FlgK[-1]),
+                'FlgL': safe(FlgL[-1]),
+                'FliC': safe(FliC[-1]),
+                'FliD': safe(FliD[-1]),
+            },
+        "peri": {
+               'periplasm':safe(periplasm[-1]),
+                'FliE': safe(FliE[-1]),
+                },
+         # "cyt": {
+         #        'cytosol': safe(cytosol[-1]),
+         #        'FliJ': safe(FliJ[-1]),
+         #        'Flil': safe(Flil[-1]),
+         #        'FliH': safe(FliH[-1]),
+         #        'FlgE': safe(FlgE[-1]),
+         #    },
         "pilus":safe(pilus[-1]),
         "outer_mem": {
             'outer_membrane':safe(outer_mem[-1]),
@@ -180,6 +274,12 @@ def plot(
             'FLGF_ROD':safe(FLGF_ROD[-1]),
             'FLGH_RING':safe(FLGH_RING[-1]),
             'FLGI_RING':safe(FLGI_RING[-1]),
+            'FliQ': safe(FliQ[-1]),
+            'FliO': safe(FliO[-1]),
+        #    'Flg_export_app': safe(Flg_Export_app[-1]),
+            'FliL': safe(FliL[-1]),
+        #    'Flg_Motor': safe(Flg_Motor[-1]),
+           # 'Flagellum': safe(Flagellum[-1]),
         },
         "mem": { #transmembrane/membrane embedded
             'membrane':safe(membrane[-1]),
@@ -191,6 +291,12 @@ def plot(
             'FLGF_RING':safe(FLGF_RING[-1]),
             'FLIG_SWITCH':safe(FLIG_SWITCH[-1]),
             'FLIM_SWITCH':safe(FLIM_SWITCH[-1]),
+            'FlhB': safe(FlhB[-1]),
+            'FlhA': safe(FlhA[-1]),
+            'FliR': safe(FliR[-1]),
+            'FliP': safe(FliP[-1]),
+            'MotA': safe(MotA[-1]),
+            'MotB': safe(MotB[-1]),
             }
         }
 
@@ -209,7 +315,7 @@ def plot(
         font_size=4,
     )
 
-    plotOutFileName = "fim_flagella_compartment_mass_fractions_voronoi"
+    plotOutFileName = "flagella_compartment_mass_fractions_voronoi"
 
     # Save figure in main workspace (optional fallback)
     plt.savefig(f"{plotOutFileName}.png", dpi=200)
