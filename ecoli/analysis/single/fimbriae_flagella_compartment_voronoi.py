@@ -191,6 +191,13 @@ def plot(
     FimG = find_protein_mass("EG10314-MONOMER[l]")
     FimH = find_protein_mass("EG10315-MONOMER[l]")
 
+#LPS IDs
+ #   lps_A = find_protein_mass("CPD0-939[c]")
+   # lpxC = find_protein_mass("clpX[c]")
+    waa = find_protein_mass("EG11351-MONOMER[c]")
+
+
+
 
     dictionaries = []
     for i in [0, -1]:
@@ -218,7 +225,11 @@ def plot(
                 'FlgE': safe(FlgE[i]),
                 'FimB': safe(FimB[i]),
                 'FimE': safe(FimE[i]),
-                },
+               # 'LPS_A': safe(lps_A[i]),
+                #'lpX':safe(lpxC[i]),
+                'waa': safe(waa[i]),
+
+               },
             'pilus': {
                 'total': safe(pilus[i]),
                 'FimF': safe(FimF[i]),
@@ -267,6 +278,7 @@ def plot(
             total = compart_dict.pop('total')
             used = sum(list(compart_dict.values()))
             remaining = total - used
+            #compart_dict[f"{compart_id}_remaining"] = remaining
             compart_dict[compart_id] = remaining
 
         dictionaries.append(compartments)

@@ -185,6 +185,8 @@ def plot(
     FliD = find_protein_mass("EG10841-MONOMER[e]")
 
 
+#MAJOR TODO: THESE ARE TECHNIQUALLY ADDING MASS - NOT SUBTRACTING NEED TO CHNAGE THE DICT STRUCTURE TO SUBTRACT FROM THE RESULTING MASS
+
     dic_initial = {
             "extracell": {
                 'extracellular': safe(extracellular[0]),
