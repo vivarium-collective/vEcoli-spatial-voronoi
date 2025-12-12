@@ -194,8 +194,10 @@ def plot(
 #LPS IDs
  #   lps_A = find_protein_mass("CPD0-939[c]")
    # lpxC = find_protein_mass("clpX[c]")
-    waa = find_protein_mass("EG11351-MONOMER[c]")
+    waa = find_protein_mass("EG11351-MONOMER[c]") #protein involved in biosynthesis
 
+#LPS IDs
+    lps_c = find_protein_mass("CPD0-939[c]")
 
 
 
