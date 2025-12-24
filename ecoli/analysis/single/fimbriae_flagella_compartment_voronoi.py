@@ -76,11 +76,30 @@ def plot(
         temp_counts = bulk_molecule_counts[:, temp_index]
         return (units.multiply(temp_counts, mw_monomer) / nAvogadro).asNumber(units.fg)
 
+    def find_molecule_mass(molecule_id):
+        temp_id = getattr(sim_data.molecule_ids, str(molecule_id))
+        temp_index = bulk_molecule_idx[temp_id]
+        temp_counts = bulk_molecule_counts[:, temp_index]
+        temp_mw = sim_data.getter.get_mass(temp_id)
+        return (units.multiply(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
+
+    def get_mass_from_bulk(sim_data):
+        bulk_info = sim_data.internal_state.bulk_molecules.bulk_data
+        return dict(zip(bulk_info["id"], bulk_info["mass"]))
+
+
+
+    # bulk_mass = get_mass_from_bulk(sim_data)
+    # lps_e = bulk_mass("CPD0-939[e]")
+    # lps_p = bulk_mass("CPD0-939[p]")
+
+#TODO: this function to get the mass of ids in bulk but not in monomer_data - arnab mentioned bulk has the mass
     # def find_mass_group(monomer_ids):
-    #     total = np.zeros(len(bulk_molecule_counts))
-    #     for monomer in monomer_ids:
-    #         total += find_protein_mass(monomer)
-    #     return total
+    #     temp_ids2 = getattr(sim_data.
+    # #     total = np.zeros(len(bulk_molecule_counts))
+    # #     for monomer in monomer_ids:
+    # #         total += find_protein_mass(monomer)
+    # #     return total
 
     flagella_monomers = [
         "FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
@@ -192,19 +211,40 @@ def plot(
     FimH = find_protein_mass("EG10315-MONOMER[l]")
 
 #LPS IDs
- #   lps_A = find_protein_mass("CPD0-939[c]")
-   # lpxC = find_protein_mass("clpX[c]")
-    waa = find_protein_mass("EG11351-MONOMER[c]") #protein involved in biosynthesis
+    lps = find_molecule_mass("LPS")
+    #lps_A = find_protein_mass("CPD0-939[c]")
+    #lpxC = find_protein_mass("clpX[c]")
+    waaA = find_protein_mass("EG11351-MONOMER[c]") #protein involved in biosynthesis
+    #lps_c = find_protein_mass("CPD0-939[c]")
+    msbA = find_protein_mass("EG10613-MONOMER[m]") #transporter - flippase - C to P
+    waaC = find_protein_mass("EG11189-MONOMER[c]")
+    waaP = find_protein_mass("EG11340-MONOMER[c]")
+    waaF = find_protein_mass("EG12210-MONOMER[c]")
+    waaY = find_protein_mass("EG11425-MONOMER[i]")
+    waaG = find_protein_mass("EG11339-MONOMER[i]")
+    waaQ = find_protein_mass("EG11341-MONOMER[c]")
+    waaB = find_protein_mass("EG11351-MONOMER[c]")
+    waaO = find_protein_mass("EG11352-MONOMER[c]")
+    waaR = find_protein_mass("EG11353-MONOMER[i]") #also WaaJ as a synonym
+    waaU = find_protein_mass("EG11423-MONOMER[c]")
 
-#LPS IDs
-    lps_c = find_protein_mass("CPD0-939[c]")
 
+
+
+#Curli Ids
+    #BAC OPERON TO MAKE THE FIBER
+    csgB = find_protein_mass("G6547-MONOMER[l]")
+    csgA = find_protein_mass("EG11489-MONOMER[e]")
+    csgC = find_protein_mass("G6548-MONOMER[p]")
+    #DEFG OPERON TO CONTROL AND SECRET SYSTEM
+    csgD = find_protein_mass("PD01379[i]") #has another id on ecocyc maybe it has been updated name
+    csgE = find_protein_mass("G6545-MONOMER[o]")
+    csgF = find_protein_mass("G6544-MONOMER[o]")
+    csgG = find_protein_mass("G6543-MONOMER[o]")
 
 
     dictionaries = []
     for i in [0, -1]:
-        # extracellular_total = safe(extracellular[i])
-        # peri_total = safe(periplasm[i])
         compartments = {
             'extracellular': {
                 'total': safe(extracellular[i]),
@@ -213,11 +253,13 @@ def plot(
                 'FliC': safe(FliC[i]),
                 'FliD': safe(FliD[i]),
                 'FimA': safe(FimA[i]),
+                'CsgA':safe(csgA[i]),
             },
             'periplasm': {
                 'total': safe(periplasm[i]),
                 'FliE': safe(FliE[i]),
                 'FimC': safe(FimC[i]),
+                'CsgC': safe(csgC[i]),
             },
             'cytosol': {
                 'total': safe(cytosol[i]),
@@ -227,21 +269,30 @@ def plot(
                 'FlgE': safe(FlgE[i]),
                 'FimB': safe(FimB[i]),
                 'FimE': safe(FimE[i]),
-               # 'LPS_A': safe(lps_A[i]),
-                #'lpX':safe(lpxC[i]),
-                'waa': safe(waa[i]),
-
+                'LPS': safe(lps[i]),
+                'WaaA': safe(waaA[i]),
+                'WaaC': safe(waaC[i]),
+                'WaaP': safe(waaP[i]),
+                'WaaF': safe(waaF[i]),
+                'WaaQ': safe(waaQ[i]),
+                'WaaB': safe(waaB[i]),
+                'WaaO': safe(waaO[i]),
+                'WaaU': safe(waaU[i]),
                },
             'pilus': {
                 'total': safe(pilus[i]),
                 'FimF': safe(FimF[i]),
                 'FimG': safe(FimG[i]),
                 'FimH': safe(FimH[i]),
+                'CsgB': safe(csgB[i]),
             },
             'outer_membrane': {
                 'total': safe(outer_mem[i]),
                 'FLGG_ROD_Protein': safe(FLGG_ROD[i]),
                 'FimD': safe(FimD[i]),
+                'CsgE': safe(csgE[i]),
+                'CsgF': safe(csgF[i]),
+                'CsgG': safe(csgG[i]),
             },
             'projection': {
                 'total': safe(projection[i]),
@@ -260,7 +311,7 @@ def plot(
             'membrane': {
                 'total': safe(membrane[i]),
                 'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
-                'placeholder': safe(1e-50),
+               'MsbA': safe(msbA[i]),
             },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
@@ -273,6 +324,10 @@ def plot(
                 'FliP': safe(FliP[i]),
                 'MotA': safe(MotA[i]),
                 'MotB': safe(MotB[i]),
+                'CsgD': safe(csgD[i]),
+                'WaaY': safe(waaY[i]),
+                'WaaG': safe(waaG[i]),
+                'WaaR': safe(waaR[i]),
             }
         }
 
@@ -280,7 +335,6 @@ def plot(
             total = compart_dict.pop('total')
             used = sum(list(compart_dict.values()))
             remaining = total - used
-            #compart_dict[f"{compart_id}_remaining"] = remaining
             compart_dict[compart_id] = remaining
 
         dictionaries.append(compartments)
