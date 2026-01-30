@@ -4,9 +4,11 @@
     "suffix_time" : true,
     "description" : "",
     "progress_bar" : true,
-    "sim_data_path": "out/kb/simData.cPickle",
-    "emitter" : "timeseries",
-    "emitter_arg": {},
+    "sim_data_path": "/Users/mayaabdalla/PycharmProjects/vEcoli_CovertLab1/runscripts/out/kb/simData.cPickle",
+    "emitter" : "parquet",
+    "emitter_arg": {
+        "out_dir": "out"
+    },
     "emit_topology" : false,
     "emit_processes" : false,
     "emit_config" : false,
@@ -28,9 +30,9 @@
     "variants": {},
     "skip_baseline": false,
     "n_init_sims": 1,
-    "generations": null,
+    "generations": 1,
     "single_daughters": true,
-    "daughter_outdir": "out",
+    "daughter_outdir": "out/daughters",
     "lineage_seed": 0,
 
     "parca_options": {

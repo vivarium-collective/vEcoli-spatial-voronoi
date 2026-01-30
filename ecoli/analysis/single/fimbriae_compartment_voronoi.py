@@ -1,6 +1,3 @@
-#This is Arnab's mass_fraction_voroni.py analysis just modified
-
-
 from typing import Any
 import os
 
@@ -124,6 +121,10 @@ def plot(
     FimF = find_protein_mass("EG10313-MONOMER[l]")
     FimG = find_protein_mass("EG10314-MONOMER[l]")
     FimH = find_protein_mass("EG10315-MONOMER[l]")
+
+#NOTE: this doesnt subtract from the listener mass right now so the distribution is a little messed up
+    # otherwise the extracellular or cytosol mass is more than whats there actually if we dont subtract
+
 
 
     dic_initial = {

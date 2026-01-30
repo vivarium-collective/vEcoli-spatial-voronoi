@@ -900,10 +900,12 @@ class VoronoiMaster(object):
                         zorder=2,
                     )
                     patches.append(polygon_plot_obj)
-                    colors = COLORS[counter] + np.random.rand(3) / 5
+                    colors = (COLORS[counter] + np.random.rand(3) / 5)
+                    #colors = np.array(COLORS[counter], dtype=float)
                     if max(colors) >= 1:
                         colors = colors / max(colors)
                     colors_all.append(colors)
+                    #counter += 1
                 p = PatchCollection(patches, facecolors=colors_all, alpha=1)
                 ax.add_collection(p)
 

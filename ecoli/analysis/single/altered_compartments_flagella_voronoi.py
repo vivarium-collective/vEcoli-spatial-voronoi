@@ -63,7 +63,7 @@ def plot(
 
     nAvogadro = sim_data.constants.n_avogadro
 
-    def find_protein_mass(monomer_id):
+    def find_protein_mass(monomer_id: object) -> int | float | Any:
         monomer_data = sim_data.process.translation.monomer_data
         monomer_weights = dict(zip(monomer_data["id"], monomer_data["mw"]))
         mw_monomer = monomer_weights[monomer_id]
@@ -144,14 +144,13 @@ def plot(
     FLIG_SWITCH = find_protein_mass("FLIG-FLAGELLAR-SWITCH-PROTEIN[i]")
     FLIM_SWITCH = find_protein_mass("FLIM-FLAGELLAR-C-RING-SWITCH[i]")
 
-    FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[m]")
+    FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[i]")
     FlhB = find_protein_mass("G7028-MONOMER[i]")
 
 #cytosol flagella subunits
     FliJ = find_protein_mass("G378-MONOMER[c]")
     Flil = find_protein_mass("G377-MONOMER[c]")
     FliH = find_protein_mass("EG11656-MONOMER[c]")
-    FlgE = find_protein_mass("G361-MONOMER[c]")
 
 #inner membrane
     FlhA = find_protein_mass("G370-MONOMER[i]")
@@ -159,13 +158,16 @@ def plot(
     FliP = find_protein_mass("EG11975-MONOMER[i]")
     MotA = find_protein_mass("MOTA-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]")
     MotB = find_protein_mass("MOTB-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]")
+    FliQ = find_protein_mass("EG11976-MONOMER[i]")
+    FliO = find_protein_mass("EG11224-MONOMER[i]")
+    FliL = find_protein_mass("EG10322-MONOMER[i]")
 
-#projection
-    FliQ = find_protein_mass("EG11976-MONOMER[j]")
-    FliO = find_protein_mass("EG11224-MONOMER[j]")
+# projection
+    FlgE = find_protein_mass("G361-MONOMER[j]")
+
+#these are the flagella reactions
    # Flg_Export_app = find_protein_mass("CPLX0-7451[j]")
-    FliL = find_protein_mass("EG10322-MONOMER[j]")
-  #  Flg_Motor = find_protein_mass("FLAGELLAR-MOTOR-COMPLEX[j]")
+   # Flg_Motor = find_protein_mass("FLAGELLAR-MOTOR-COMPLEX[j]")
    # Flagellum = find_protein_mass("CPLX0-7452[j]")
 
 #periplasm
@@ -197,7 +199,6 @@ def plot(
                 'FliJ': safe(FliJ[i]),
                 'Flil': safe(Flil[i]),
                 'FliH': safe(FliH[i]),
-                'FlgE': safe(FlgE[i]),
             #    },
             # 'pilus': {
             #     'total': safe(pilus[i]), #NOTE: when this is not commented out, we get an error
@@ -213,17 +214,13 @@ def plot(
                 'FLGF_ROD': safe(FLGF_ROD[i]),
                 'FLGH_RING': safe(FLGH_RING[i]),
                 'FLGI_RING': safe(FLGI_RING[i]),
-                'FliQ': safe(FliQ[i]),
-                'FliO': safe(FliO[i]),
-                #'Flg_export_app': safe(Flg_Export_app[i]),
-                'FliL': safe(FliL[i]),
-                #'Flg_Motor': safe(Flg_Motor[i]),
-                #'Flagellum': safe(Flagellum[i]),
+                'FlgE': safe(FlgE[i]), #this worked change
+
             },
-            'membrane': {
-                'total': safe(membrane[i]),
-                'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
-            },
+            # 'membrane': {
+            #     'total': safe(membrane[i]),
+            #    # 'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
+            # },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
                 'FLGF_RING': safe(FLGF_RING[i]),
@@ -235,13 +232,17 @@ def plot(
                 'FliP': safe(FliP[i]),
                 'MotA': safe(MotA[i]),
                 'MotB': safe(MotB[i]),
+                #'FLIN_SWITCH': safe(FLIN_SWITCH[i]), #do not get an error when this is uncommented
+                #'FliQ': safe(FliQ[i]), #NOTE: error when i uncomment this, but runs perfect when commented out - i think its math
+                'FliO': safe(FliO[i]), #uncomment this get error (2,0) and (0,0)
+              #   'FliL': safe(FliL[i]),
             }
         }
 
         for compart_id, compart_dict in compartments.items():
             total = compart_dict.pop('total')
             used = sum(list(compart_dict.values()))
-            remaining = total - used
+            remaining = safe(total - used)
             compart_dict[compart_id] = remaining
 
         dictionaries.append(compartments)
@@ -265,7 +266,7 @@ def plot(
         font_size=2,
     )
 
-    plotOutFileName = "func_compartment_mass_fractions_voronoi"
+    plotOutFileName = "altered_compartments_flagella_voronoi"
 
     # Save figure in main workspace (optional fallback)
     plt.savefig(f"{plotOutFileName}.png", dpi=600)

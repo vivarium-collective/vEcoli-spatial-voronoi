@@ -1,3 +1,4 @@
+#%%
 from typing import Any
 import os
 
@@ -16,6 +17,7 @@ from wholecell.utils.voronoi_plot_main import VoronoiMaster
 
 from wholecell.utils.voronoi_plot_main import COLORS
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def plot(
@@ -56,7 +58,6 @@ def plot(
     bulk_molecule_idx = {name: idx for idx, name in enumerate(bulk_molecule_ids)}
 
     exp_id = list(sim_data_paths.keys())[0]
-
     sim_data_path = list(sim_data_paths[exp_id].values())[0]
 
     sim_data = LoadSimData(sim_data_path).sim_data
@@ -70,52 +71,35 @@ def plot(
         temp_index = bulk_molecule_idx[monomer_id]
         temp_counts = bulk_molecule_counts[:, temp_index]
         return (units.multiply(temp_counts, mw_monomer) / nAvogadro).asNumber(units.fg)
-    #
-    # # def find_mass_group(monomer_ids):
+
+    def find_molecule_mass(molecule_id):
+        temp_id = getattr(sim_data.molecule_ids, str(molecule_id))
+        temp_index = bulk_molecule_idx[temp_id]
+        temp_counts = bulk_molecule_counts[:, temp_index]
+        temp_mw = sim_data.getter.get_mass(temp_id)
+        return (units.multiply(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
+
+#arnab mentioned getting mass from the bulk -
+    def get_mass_from_bulk(sim_data):
+        bulk_info = sim_data.internal_state.bulk_molecules.bulk_data
+        return dict(zip(bulk_info["id"], bulk_info["mass"]))
+
+#TODO: this function to get the mass of ids in bulk but not in monomer_data - arnab mentioned bulk has the mass
+    # def find_mass_group(monomer_ids):
+    #     temp_ids2 = getattr(sim_data.
     # #     total = np.zeros(len(bulk_molecule_counts))
     # #     for monomer in monomer_ids:
     # #         total += find_protein_mass(monomer)
     # #     return total
-    #
-    # flagella_monomers = [
-    #     "FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-    #     "FLGC-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-    #     "FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-    #     "FLGG-FLAGELLAR-MOTOR-ROD-PROTEIN[o]",
-    #     "FLGH-FLAGELLAR-L-RING[j]",
-    #     "FLGI-FLAGELLAR-P-RING[j]",
-    #     "FLIF-FLAGELLAR-MS-RING[i]",
-    #     "FLIG-FLAGELLAR-SWITCH-PROTEIN[i]",
-    #     "FLIM-FLAGELLAR-C-RING-SWITCH[i]",
-    #     "FLIN-FLAGELLAR-C-RING-SWITCH[m]",
-    #     "G7028-MONOMER[i]",
-    #     "G378-MONOMER[c]",
-    #     "G377-MONOMER[c]",
-    #     "G370-MONOMER[i]",
-    #     "EG11977-MONOMER[i]",
-    #     "EG11976-MONOMER[j]",
-    #     "EG11975-MONOMER[i]",
-    #     "EG11656-MONOMER[c]",
-    #     "EG11224-MONOMER[j]",
-    #    # "CPLX0-7451[j]",
-    #     "MOTA-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
-    #     "MOTB-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
-    #     "EG11346-MONOMER[p]",
-    #     "EG10322-MONOMER[j]",
-    #     #"FLAGELLAR-MOTOR-COMPLEX[j]",
-    #     "G361-MONOMER[c]",
-    #     "EG11967-MONOMER[e]",
-    #     "EG11545-MONOMER[e]",
-    #     "EG10321-MONOMER[e]",
-    #     "EG10841-MONOMER[e]",
-    #     #"CPLX0-7452[j]" #flagellum
-    # ]
 
-    #flagella_masses = find_mass_group(flagella_monomers)
+#TODO: there is a common names in sim data,
+# make a function where you can type in the common name and it brings back the ID
 
 
-#Function because tiny numbers and Voronoi function cannot hangle zero or negative values
-        #converts the value to a float, returns the original value unless extremely tiny
+
+    #Function because have such tiny numbers and voronoi cannot go 0 or under
+        #Voronoi function cannot hangle zero or negative values
+        #this function converts the value to a float, returns the original value unless extremely tiny
         #if less than 1e20, force it to be 1e20
     def safe(x):
         x = float(x)
@@ -139,11 +123,9 @@ def plot(
     FLGF_ROD = find_protein_mass("FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
     FLGH_RING = find_protein_mass("FLGH-FLAGELLAR-L-RING[j]")
     FLGI_RING = find_protein_mass("FLGI-FLAGELLAR-P-RING[j]")
-
     FLGF_RING = find_protein_mass("FLIF-FLAGELLAR-MS-RING[i]")
     FLIG_SWITCH = find_protein_mass("FLIG-FLAGELLAR-SWITCH-PROTEIN[i]")
     FLIM_SWITCH = find_protein_mass("FLIM-FLAGELLAR-C-RING-SWITCH[i]")
-
     FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[m]")
     FlhB = find_protein_mass("G7028-MONOMER[i]")
 
@@ -177,6 +159,73 @@ def plot(
     FliC = find_protein_mass("EG10321-MONOMER[e]")
     FliD = find_protein_mass("EG10841-MONOMER[e]")
 
+    # fim Subunits
+    FimA = find_protein_mass("EG10308-MONOMER[e]")
+    FimB = find_protein_mass("EG10309-MONOMER[c]")
+    FimC = find_protein_mass("EG10310-MONOMER[p]")
+    FimD = find_protein_mass("EG10311-MONOMER[o]")
+    FimE = find_protein_mass("EG10312-MONOMER[c]")
+    FimF = find_protein_mass("EG10313-MONOMER[l]")
+    FimG = find_protein_mass("EG10314-MONOMER[l]")
+    FimH = find_protein_mass("EG10315-MONOMER[l]")
+
+# #LPS IDs
+#     lps = find_molecule_mass("LPS")
+#     #lps_A = find_protein_mass("CPD0-939[c]")
+#     #lpxC = find_protein_mass("clpX[c]")
+#     waaA = find_protein_mass("EG11351-MONOMER[c]") #protein involved in biosynthesis
+#     #lps_c = find_protein_mass("CPD0-939[c]")
+#     msbA = find_protein_mass("EG10613-MONOMER[m]") #transporter - flippase - C to P
+#     waaC = find_protein_mass("EG11189-MONOMER[c]")
+#     waaP = find_protein_mass("EG11340-MONOMER[c]")
+#     waaF = find_protein_mass("EG12210-MONOMER[c]")
+#     waaY = find_protein_mass("EG11425-MONOMER[i]")
+#     waaG = find_protein_mass("EG11339-MONOMER[i]")
+#     waaQ = find_protein_mass("EG11341-MONOMER[c]")
+#     waaB = find_protein_mass("EG11351-MONOMER[c]")
+#     waaO = find_protein_mass("EG11352-MONOMER[c]")
+#     waaR = find_protein_mass("EG11353-MONOMER[i]") #also WaaJ as a synonym
+#     waaU = find_protein_mass("EG11423-MONOMER[c]")
+#
+# #Curli Ids
+#     #BAC OPERON TO MAKE THE FIBER
+#     csgB = find_protein_mass("G6547-MONOMER[l]")
+#     csgA = find_protein_mass("EG11489-MONOMER[e]")
+#     csgC = find_protein_mass("G6548-MONOMER[p]")
+#     #DEFG OPERON TO CONTROL AND SECRET SYSTEM
+#     csgD = find_protein_mass("PD01379[i]") #has another id on ecocyc maybe it has been updated name
+#     csgE = find_protein_mass("G6545-MONOMER[o]")
+#     csgF = find_protein_mass("G6544-MONOMER[o]")
+#     csgG = find_protein_mass("G6543-MONOMER[o]")
+#
+# #TODO: add in EPS components - PGA, cellulose, colanic acid
+
+# PGA
+#     pgaC = find_protein_mass("G6529-MONOMER[i]")
+#     pgaD = find_protein_mass("G6528-MONOMER[i]")
+#     pgaB = find_protein_mass("G6530-MONOMER[p]")
+#     pgaA = find_protein_mass("G6531-MONOMER[o]")
+#
+# #cellulose
+#     #bscA is the catalytic subunit in the bcs operon
+#     celluloseA = find_protein_mass("EG12260-MONOMER[i]")
+#     #bcsB is the cellulose synthase periplasmic subunit -- why is it in the inner membrane rn and not periplasm
+#     # B is ESSENTIAL in strains able to form biofilms
+#     celluloseB = find_protein_mass("EG12259-MONOMER[i]")
+#     # bcsC is the outer membrane channel
+#     celluloseC = find_protein_mass("EG12257-MONOMER[o]")
+#     celluloseZ = find_protein_mass("EG12258-MONOMER[e]")
+#
+#     #bscEFG operon genes
+#     # E identified as the c-di-GMP-binding protein
+#     celluloseE = find_protein_mass("EG12263-MONOMER[c]")
+#     celluloseF = find_protein_mass("EG12264-MONOMER[i]")
+#     celluloseG = find_protein_mass("EG12265-MONOMER[i]")
+
+# Colanic acid
+#
+
+
 
     dictionaries = []
     for i in [0, -1]:
@@ -187,10 +236,16 @@ def plot(
                 'FlgL': safe(FlgL[i]),
                 'FliC': safe(FliC[i]),
                 'FliD': safe(FliD[i]),
+                'FimA': safe(FimA[i]),
+                # 'CsgA': safe(csgA[i]),
+                # 'BcsZ': safe(celluloseZ[i]),
             },
             'periplasm': {
                 'total': safe(periplasm[i]),
                 'FliE': safe(FliE[i]),
+                'FimC': safe(FimC[i]),
+                # 'CsgC': safe(csgC[i]),
+                # 'PgaB': safe(pgaB[i]),
             },
             'cytosol': {
                 'total': safe(cytosol[i]),
@@ -198,13 +253,35 @@ def plot(
                 'Flil': safe(Flil[i]),
                 'FliH': safe(FliH[i]),
                 'FlgE': safe(FlgE[i]),
-            #    },
-            # 'pilus': {
-            #     'total': safe(pilus[i]), #NOTE: when this is not commented out, we get an error
+            #     'FimB': safe(FimB[i]),
+            #     'FimE': safe(FimE[i]),
+            #     'LPS': safe(lps[i]),
+            #     'WaaA': safe(waaA[i]),
+            #     'WaaC': safe(waaC[i]),
+            #     'WaaP': safe(waaP[i]),
+            #     'WaaF': safe(waaF[i]),
+            #     'WaaQ': safe(waaQ[i]),
+            #     'WaaB': safe(waaB[i]),
+            #     'WaaO': safe(waaO[i]),
+            #     'WaaU': safe(waaU[i]),
+            #     'BcsE': safe(celluloseE[i]),
+               },
+            'pilus': {
+                'total': safe(pilus[i]),
+                'FimF': safe(FimF[i]),
+                'FimG': safe(FimG[i]),
+                'FimH': safe(FimH[i]),
+                # 'CsgB': safe(csgB[i]),
             },
             'outer_membrane': {
                 'total': safe(outer_mem[i]),
                 'FLGG_ROD_Protein': safe(FLGG_ROD[i]),
+                'FimD': safe(FimD[i]),
+                # 'CsgE': safe(csgE[i]),
+                # 'CsgF': safe(csgF[i]),
+                # 'CsgG': safe(csgG[i]),
+                # 'PgaA': safe(pgaA[i]),
+                # 'BcsC': safe(celluloseC[i]),
             },
             'projection': {
                 'total': safe(projection[i]),
@@ -223,6 +300,7 @@ def plot(
             'membrane': {
                 'total': safe(membrane[i]),
                 'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
+                # 'MsbA': safe(msbA[i]),
             },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
@@ -235,6 +313,16 @@ def plot(
                 'FliP': safe(FliP[i]),
                 'MotA': safe(MotA[i]),
                 'MotB': safe(MotB[i]),
+                # 'CsgD': safe(csgD[i]),
+                # 'WaaY': safe(waaY[i]),
+                # 'WaaG': safe(waaG[i]),
+                # 'WaaR': safe(waaR[i]),
+                # 'PgaC': safe(pgaC[i]),
+                # 'PgaD': safe(pgaD[i]),
+                # 'BcsA': safe(celluloseA[i]),
+                # 'BcsB': safe(celluloseB[i]),
+                # 'BcsF': safe(celluloseF[i]),
+                # 'BcsG': safe(celluloseG[i]),
             }
         }
 
@@ -277,4 +365,3 @@ def plot(
     print(f"\nSaved Voronoi biomass plot to:\n {full_path}\n")
 
     plt.close()
-

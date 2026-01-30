@@ -732,6 +732,44 @@ class EcoliSim:
                 self.generated_initial_state, initial_environment
             )
 
+    # def update_experiment(self, time_to_update: float = 0.0):
+    #     """
+    #     Runs the E. coli simulation for a specified amount of time. If the
+    #     simulation reaches a division event and ``config['generations']`` is set,
+    #     it will save the daughter cell states to JSON files in the directory
+    #     specified by ``config['daughter_outdir']``. Also creates a file
+    #     ``division_time.sh`` that, when executed, sets the environment variable
+    #     ``division_time`` to the time at which division occurred (used in
+    #     Nextflow workflow runs).
+    #     """
+    #     try:
+    #         self.ecoli_experiment.update(time_to_update)
+    #     except DivisionDetected:
+    #         state = self.ecoli_experiment.state.get_value(condition=not_a_process)
+    #         assert len(state["agents"]) == 2
+    #         for i, agent_state in enumerate(state["agents"].values()):
+    #             prepare_save_state(agent_state)
+    #             daughter_path = os.path.join(
+    #                 self.daughter_outdir, f"daughter_state_{i}.json"
+    #             )
+    #             write_json(daughter_path, agent_state)
+    #         print(
+    #             f"Divided at t = {self.ecoli_experiment.global_time} after "
+    #             f"{self.ecoli_experiment.global_time - self.initial_global_time} sec."
+    #         )
+    #         with open("division_time.sh", "w") as f:
+    #             f.write(f"export division_time={self.ecoli_experiment.global_time}")
+    #         # Tell Parquet emitter that simulation was successful
+    #         if isinstance(self.ecoli_experiment.emitter, ParquetEmitter):
+    #             self.ecoli_experiment.emitter.success = True
+    #             self.ecoli_experiment.emitter.finalize()
+    #         # Exit so that EcoliSim.run() does not raise TimeLimitError
+    #         sys.exit()
+    #     finally:
+    #         # Finish writing any buffered emits to Parquet files
+    #         if isinstance(self.ecoli_experiment.emitter, ParquetEmitter):
+    #             self.ecoli_experiment.emitter.finalize()
+
     def update_experiment(self, time_to_update: float = 0.0):
         """
         Runs the E. coli simulation for a specified amount of time. If the
@@ -744,31 +782,46 @@ class EcoliSim:
         """
         try:
             self.ecoli_experiment.update(time_to_update)
+
         except DivisionDetected:
             state = self.ecoli_experiment.state.get_value(condition=not_a_process)
             assert len(state["agents"]) == 2
+
             for i, agent_state in enumerate(state["agents"].values()):
                 prepare_save_state(agent_state)
                 daughter_path = os.path.join(
                     self.daughter_outdir, f"daughter_state_{i}.json"
                 )
                 write_json(daughter_path, agent_state)
+
             print(
                 f"Divided at t = {self.ecoli_experiment.global_time} after "
                 f"{self.ecoli_experiment.global_time - self.initial_global_time} sec."
             )
+
             with open("division_time.sh", "w") as f:
                 f.write(f"export division_time={self.ecoli_experiment.global_time}")
-            # Tell Parquet emitter that simulation was successful
+
+            # Tell Parquet emitter that simulation was successful and flush output
             if isinstance(self.ecoli_experiment.emitter, ParquetEmitter):
-                self.ecoli_experiment.emitter.success = True
-                self.ecoli_experiment.emitter.finalize()
+                em = self.ecoli_experiment.emitter
+                em.success = True
+                if hasattr(em, "finalize"):
+                    em.finalize()
+                elif hasattr(em, "_finalize"):
+                    em._finalize()
+
             # Exit so that EcoliSim.run() does not raise TimeLimitError
             sys.exit()
+
         finally:
             # Finish writing any buffered emits to Parquet files
             if isinstance(self.ecoli_experiment.emitter, ParquetEmitter):
-                self.ecoli_experiment.emitter.finalize()
+                em = self.ecoli_experiment.emitter
+                if hasattr(em, "finalize"):
+                    em.finalize()
+                elif hasattr(em, "_finalize"):
+                    em._finalize()
 
     def save_states(self):
         """

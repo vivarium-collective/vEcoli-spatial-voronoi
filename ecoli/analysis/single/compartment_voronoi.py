@@ -9,11 +9,11 @@ import matplotlib.pyplot as plt
 
 from ecoli.library.parquet_emitter import read_stacked_columns, field_metadata
 from ecoli.library.sim_data import LoadSimData
-from ecoli.processes.antibiotics.antibiotic_transport_steady_state import TEMPERATURE
 
-from wholecell.utils import units
+
+from wholecell.utils import units, voronoi_plot_main
 from wholecell.analysis.analysis_tools import exportFigure
-from wholecell.utils.voronoi_plot_main import VoronoiMaster
+from wholecell.utils.voronoi_plot_main import VoronoiMaster, COLORS
 
 
 def plot(
@@ -40,6 +40,7 @@ def plot(
         "listeners__mass__projection_mass",
         "listeners__mass__membrane_mass",
         "listeners__mass__inner_membrane_mass",
+        "listeners__mass__flagellum_mass",
         "bulk",
     ]
 
@@ -61,19 +62,19 @@ def plot(
 
     nAvogadro = sim_data.constants.n_avogadro
 
-    # # def find_mass_molecule_group(group_id):
-    # #     temp_ids = getattr(sim_data.molecule_groups, str(group_id))
-    # #     temp_indexes = np.array([bulk_molecule_idx[temp] for temp in temp_ids])
-    # #     temp_counts = bulk_molecule_counts[:, temp_indexes]
-    # #     temp_mw = sim_data.getter.get_masses(temp_ids)
-    # #     return (units.dot(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
-    # #
-    # def find_mass_single_molecule(molecule_id):
-    #     temp_id = getattr(sim_data.molecule_ids, str(molecule_id))
-    #     temp_index = bulk_molecule_idx[temp_id]
-    #     temp_counts = bulk_molecule_counts[:, temp_index]
-    #     temp_mw = sim_data.getter.get_mass(temp_id)
-    #     return (units.multiply(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
+    # # # def find_mass_molecule_group(group_id):
+    # # #     temp_ids = getattr(sim_data.molecule_groups, str(group_id))
+    # # #     temp_indexes = np.array([bulk_molecule_idx[temp] for temp in temp_ids])
+    # # #     temp_counts = bulk_molecule_counts[:, temp_indexes]
+    # # #     temp_mw = sim_data.getter.get_masses(temp_ids)
+    # # #     return (units.dot(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
+    # # #
+    # # def find_mass_single_molecule(molecule_id):
+    # #     temp_id = getattr(sim_data.molecule_ids, str(molecule_id))
+    # #     temp_index = bulk_molecule_idx[temp_id]
+    # #     temp_counts = bulk_molecule_counts[:, temp_index]
+    # #     temp_mw = sim_data.getter.get_mass(temp_id)
+    # #     return (units.multiply(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
 
     extracellular = voronoi_data["listeners__mass__extracellular_mass"]
     periplasm = voronoi_data["listeners__mass__periplasm_mass"]
@@ -82,28 +83,50 @@ def plot(
     outer_mem = voronoi_data["listeners__mass__outer_membrane_mass"]
     projection = voronoi_data["listeners__mass__projection_mass"]
     membrane = voronoi_data["listeners__mass__membrane_mass"]
-    inner_mem = voronoi_data["listeners__mass__inner_membrane_mass"]
+    inner_membrane = voronoi_data["listeners__mass__inner_membrane_mass"]
+    flagellum = voronoi_data["listeners__mass__flagellum_mass"]
 
     dic_initial = {
-            "extracellular": extracellular[0],
-            "periplasm": periplasm[0],
-            "cytosol": cytosol[0],
-            "pilus": pilus[0],
-            "outer_membrane": outer_mem[0],
-            "projection": projection[0],
-            "membrane": membrane[0],
-            "inner_mem": inner_mem[0],
+        "extracellular": float(extracellular[0]),
+        "periplasm": float(periplasm[0]),
+        "cytosol": float(cytosol[0]),
+        "pilus": float(pilus[0]),
+        "outer_membrane": float(outer_mem[0]),
+        "projection": float(projection[0]),
+        "membrane": float(membrane[0]),
+        "inner_membrane": float(inner_membrane[0]),
+        "flagellum": float(flagellum[0]),
     }
     dic_final = {
-        "extracellular": extracellular[-1],
-        "periplasm": periplasm[-1],
-        "cytosol": cytosol[-1],
-        "pilus": pilus[-1],
-        "outer_membrane": outer_mem[-1],
-        "projection": projection[-1],
-        "membrane": membrane[-1],
-        "inner_mem": inner_mem[-1],
+        "extracellular": float(extracellular[-1]),
+        "periplasm": float(periplasm[-1]),
+        "cytosol": float(cytosol[-1]),
+        "pilus": float(pilus[-1]),
+        "outer_membrane": float(outer_mem[-1]),
+        "projection": float(projection[-1]),
+        "membrane": float(membrane[-1]),
+        "inner_membrane": float(inner_membrane[-1]),
+        "flagellum": float(flagellum[-1]),
     }
+
+
+    # Replace the entire COLORS list
+    # Base colors (one per compartment) - this is to keep the colors for each compartment the same
+    # Base pastel colors (one per compartment)
+    base_colors = [
+        np.array([200, 210, 195]) / 255,  # extracellular - light beige
+        np.array([168, 216, 185]) / 255,  # periplasm - soft green
+        np.array([173, 197, 232]) / 255,  # cytosol - soft blue
+        np.array([244, 184, 208]) / 255,  # pilus - soft pink
+        np.array([248, 231, 165]) / 255,  # outer_membrane - pale yellow
+        np.array([176, 224, 230]) / 255,  # projection - powder blue
+        np.array([255, 204, 153]) / 255,  # membrane - peach
+        np.array([204, 187, 222]) / 255,  # inner_membrane - lavender
+        np.array([242, 169, 159]) / 255,  # flagellum - muted coral
+    ]
+
+    # Repeat for initial + final so colors match
+    voronoi_plot_main.COLORS = base_colors * 2
 
     vm = VoronoiMaster()
     vm.plot(
@@ -111,6 +134,7 @@ def plot(
         title=[["Initial biomass components", "Final biomass components"]],
         ax_shape=(1, 2),
         chained=True,
+        font_size=4,
     )
 
     plotOutFileName = "compartments_mass_fractions_voronoi"
@@ -125,3 +149,11 @@ def plot(
     print(f"\nSaved Voronoi biomass plot to:\n {full_path}\n")
 
     plt.close()
+
+
+
+
+
+
+
+

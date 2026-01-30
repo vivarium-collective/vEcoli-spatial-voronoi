@@ -83,11 +83,10 @@ def plot(
         temp_mw = sim_data.getter.get_mass(temp_id)
         return (units.multiply(temp_counts, temp_mw) / nAvogadro).asNumber(units.fg)
 
+#arnab mentioned getting mass from the bulk -
     def get_mass_from_bulk(sim_data):
         bulk_info = sim_data.internal_state.bulk_molecules.bulk_data
         return dict(zip(bulk_info["id"], bulk_info["mass"]))
-
-
 
     # bulk_mass = get_mass_from_bulk(sim_data)
     # lps_e = bulk_mass("CPD0-939[e]")
@@ -101,42 +100,10 @@ def plot(
     # #         total += find_protein_mass(monomer)
     # #     return total
 
-    flagella_monomers = [
-        "FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-        "FLGC-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-        "FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]",
-        "FLGG-FLAGELLAR-MOTOR-ROD-PROTEIN[o]",
-        "FLGH-FLAGELLAR-L-RING[j]",
-        "FLGI-FLAGELLAR-P-RING[j]",
-        "FLIF-FLAGELLAR-MS-RING[i]",
-        "FLIG-FLAGELLAR-SWITCH-PROTEIN[i]",
-        "FLIM-FLAGELLAR-C-RING-SWITCH[i]",
-        "FLIN-FLAGELLAR-C-RING-SWITCH[m]",
-        "G7028-MONOMER[i]",
-        "G378-MONOMER[c]",
-        "G377-MONOMER[c]",
-        "G370-MONOMER[i]",
-        "EG11977-MONOMER[i]",
-        "EG11976-MONOMER[j]",
-        "EG11975-MONOMER[i]",
-        "EG11656-MONOMER[c]",
-        "EG11224-MONOMER[j]",
-       # "CPLX0-7451[j]",
-        "MOTA-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
-        "MOTB-FLAGELLAR-MOTOR-STATOR-PROTEIN[i]",
-        "EG11346-MONOMER[p]",
-        "EG10322-MONOMER[j]",
-        #"FLAGELLAR-MOTOR-COMPLEX[j]",
-        "G361-MONOMER[c]",
-        "EG11967-MONOMER[e]",
-        "EG11545-MONOMER[e]",
-        "EG10321-MONOMER[e]",
-        "EG10841-MONOMER[e]",
-        #"CPLX0-7452[j]" #flagellum
-    ]
+#TODO: there is a common names in sim data,
+# make a function where you can type in the common name and it brings back the ID
 
 
-    #flagella_masses = find_mass_group(flagella_monomers)
 
     #Function because have such tiny numbers and voronoi cannot go 0 or under
         #Voronoi function cannot hangle zero or negative values
@@ -228,9 +195,6 @@ def plot(
     waaR = find_protein_mass("EG11353-MONOMER[i]") #also WaaJ as a synonym
     waaU = find_protein_mass("EG11423-MONOMER[c]")
 
-
-
-
 #Curli Ids
     #BAC OPERON TO MAKE THE FIBER
     csgB = find_protein_mass("G6547-MONOMER[l]")
@@ -241,6 +205,30 @@ def plot(
     csgE = find_protein_mass("G6545-MONOMER[o]")
     csgF = find_protein_mass("G6544-MONOMER[o]")
     csgG = find_protein_mass("G6543-MONOMER[o]")
+
+#TODO: add in EPS components - PGA, cellulose, colanic acid
+    pgaC = find_protein_mass("G6529-MONOMER[i]")
+    pgaD = find_protein_mass("G6528-MONOMER[i]")
+    pgaB = find_protein_mass("G6530-MONOMER[p]")
+    pgaA = find_protein_mass("G6531-MONOMER[o]")
+
+#cellulose
+    #bscA is the catalytic subunit in the bcs operon
+    celluloseA = find_protein_mass("EG12260-MONOMER[i]")
+    #bcsB is the cellulose synthase periplasmic subunit -- why is it in the inner membrane rn and not periplasm
+    # B is ESSENTIAL in strains able to form biofilms
+    celluloseB = find_protein_mass("EG12259-MONOMER[i]")
+    # bcsC is the outer membrane channel
+    celluloseC = find_protein_mass("EG12257-MONOMER[o]")
+    celluloseZ = find_protein_mass("EG12258-MONOMER[e]")
+
+    #bscEFG operon genes
+    # E identified as the c-di-GMP-binding protein
+    celluloseE = find_protein_mass("EG12263-MONOMER[c]")
+    celluloseF = find_protein_mass("EG12264-MONOMER[i]")
+    celluloseG = find_protein_mass("EG12265-MONOMER[i]")
+
+
 
 
     dictionaries = []
@@ -253,13 +241,15 @@ def plot(
                 'FliC': safe(FliC[i]),
                 'FliD': safe(FliD[i]),
                 'FimA': safe(FimA[i]),
-                'CsgA':safe(csgA[i]),
+                'CsgA': safe(csgA[i]),
+                'BcsZ': safe(celluloseZ[i]),
             },
             'periplasm': {
                 'total': safe(periplasm[i]),
                 'FliE': safe(FliE[i]),
                 'FimC': safe(FimC[i]),
                 'CsgC': safe(csgC[i]),
+                'PgaB': safe(pgaB[i]),
             },
             'cytosol': {
                 'total': safe(cytosol[i]),
@@ -267,17 +257,18 @@ def plot(
                 'Flil': safe(Flil[i]),
                 'FliH': safe(FliH[i]),
                 'FlgE': safe(FlgE[i]),
-                'FimB': safe(FimB[i]),
-                'FimE': safe(FimE[i]),
+            #     'FimB': safe(FimB[i]),
+            #     'FimE': safe(FimE[i]),
                 'LPS': safe(lps[i]),
-                'WaaA': safe(waaA[i]),
-                'WaaC': safe(waaC[i]),
-                'WaaP': safe(waaP[i]),
-                'WaaF': safe(waaF[i]),
-                'WaaQ': safe(waaQ[i]),
-                'WaaB': safe(waaB[i]),
-                'WaaO': safe(waaO[i]),
+            #     'WaaA': safe(waaA[i]),
+            #     'WaaC': safe(waaC[i]),
+            #     'WaaP': safe(waaP[i]),
+            #     'WaaF': safe(waaF[i]),
+            #     'WaaQ': safe(waaQ[i]),
+            #     'WaaB': safe(waaB[i]),
+            #     'WaaO': safe(waaO[i]),
                 'WaaU': safe(waaU[i]),
+                'BcsE': safe(celluloseE[i]),
                },
             'pilus': {
                 'total': safe(pilus[i]),
@@ -293,6 +284,8 @@ def plot(
                 'CsgE': safe(csgE[i]),
                 'CsgF': safe(csgF[i]),
                 'CsgG': safe(csgG[i]),
+                'PgaA': safe(pgaA[i]),
+                'BcsC': safe(celluloseC[i]),
             },
             'projection': {
                 'total': safe(projection[i]),
@@ -311,7 +304,7 @@ def plot(
             'membrane': {
                 'total': safe(membrane[i]),
                 'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
-               'MsbA': safe(msbA[i]),
+                'MsbA': safe(msbA[i]),
             },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
@@ -328,6 +321,12 @@ def plot(
                 'WaaY': safe(waaY[i]),
                 'WaaG': safe(waaG[i]),
                 'WaaR': safe(waaR[i]),
+                'PgaC': safe(pgaC[i]),
+                'PgaD': safe(pgaD[i]),
+                'BcsA': safe(celluloseA[i]),
+                'BcsB': safe(celluloseB[i]),
+                'BcsF': safe(celluloseF[i]),
+                'BcsG': safe(celluloseG[i]),
             }
         }
 
