@@ -11,11 +11,12 @@ from ecoli.library.sim_data import LoadSimData
 from ecoli.processes.antibiotics.antibiotic_transport_steady_state import TEMPERATURE
 
 from wholecell.utils import units
-from wholecell.analysis.analysis_tools import exportFigure
-from wholecell.utils.voronoi_plot_main import VoronoiMaster
-
-from wholecell.utils.voronoi_plot_main import COLORS
 import matplotlib.pyplot as plt
+
+
+# Replaced voronoi function because wanted to edit it without changing master
+from ecoli.analysis.single.voronoi_plot_function_copy import VoronoiMaster
+from ecoli.analysis.single.voronoi_plot_function_copy import COLORS
 
 
 def plot(
@@ -42,6 +43,7 @@ def plot(
         "listeners__mass__projection_mass",
         "listeners__mass__membrane_mass",
         "listeners__mass__inner_membrane_mass",
+        "listeners__mass__flagellum_mass",
         "bulk",
     ]
 
@@ -117,9 +119,14 @@ def plot(
 #Function because tiny numbers and Voronoi function cannot hangle zero or negative values
         #converts the value to a float, returns the original value unless extremely tiny
         #if less than 1e20, force it to be 1e20
+    # def safe(x):
+    #     x = float(x)
+    #     return x if x > 1e-20 else 1e-20
+
+        # Raise the safe() floor significantly - 1e-20 is dangerously small for Voronoi
     def safe(x):
         x = float(x)
-        return x if x > 1e-20 else 1e-20
+        return x if x > 1e-6 else 1e-6  # or even 1e-3 depending on your mass scale
 
 #listener/compartment masses
     extracellular = voronoi_data["listeners__mass__extracellular_mass"]
@@ -130,13 +137,14 @@ def plot(
     projection = voronoi_data["listeners__mass__projection_mass"]
     membrane = voronoi_data["listeners__mass__membrane_mass"]
     inner_mem = voronoi_data["listeners__mass__inner_membrane_mass"]
+    flagellum = voronoi_data["listeners__mass__flagellum_mass"]
 
 
 #Flagella Subunits
-    FLGG_ROD = find_protein_mass("FLGG-FLAGELLAR-MOTOR-ROD-PROTEIN[o]")
-    FLGB_ROD = find_protein_mass("FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
-    FLGC_ROD = find_protein_mass("FLGC-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
-    FLGF_ROD = find_protein_mass("FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
+    FLGG = find_protein_mass("FLGG-FLAGELLAR-MOTOR-ROD-PROTEIN[o]")
+    FLGB = find_protein_mass("FLGB-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
+    FLGC = find_protein_mass("FLGC-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
+    FLGF = find_protein_mass("FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
     FLGH_RING = find_protein_mass("FLGH-FLAGELLAR-L-RING[j]")
     FLGI_RING = find_protein_mass("FLGI-FLAGELLAR-P-RING[j]")
 
@@ -188,6 +196,9 @@ def plot(
                 'FliC': safe(FliC[i]),
                 'FliD': safe(FliD[i]),
             },
+            'flagellum': {
+                'total': safe(flagellum[i]),
+            },
             'periplasm': {
                 'total': safe(periplasm[i]),
                 'FliE': safe(FliE[i]),
@@ -204,15 +215,15 @@ def plot(
             },
             'outer_membrane': {
                 'total': safe(outer_mem[i]),
-                'FLGG_ROD_Protein': safe(FLGG_ROD[i]),
+                'FLGG': safe(FLGG[i]),
             },
             'projection': {
                 'total': safe(projection[i]),
-                'FLGB_ROD': safe(FLGB_ROD[i]),
-                'FLGC_ROD': safe(FLGC_ROD[i]),
-                'FLGF_ROD': safe(FLGF_ROD[i]),
-                'FLGH_RING': safe(FLGH_RING[i]),
-                'FLGI_RING': safe(FLGI_RING[i]),
+                'FLGB': safe(FLGB[i]),
+                'FLGC': safe(FLGC[i]),
+                'FLGF': safe(FLGF[i]),
+                'FLGH': safe(FLGH_RING[i]),
+                'FLGI': safe(FLGI_RING[i]),
                 'FliQ': safe(FliQ[i]),
                 'FliO': safe(FliO[i]),
                 #'Flg_export_app': safe(Flg_Export_app[i]),
@@ -222,13 +233,13 @@ def plot(
             },
             'membrane': {
                 'total': safe(membrane[i]),
-                'FLIN_SWITCH': safe(FLIN_SWITCH[i]),
+                'FLIN': safe(FLIN_SWITCH[i]),
             },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
-                'FLGF_RING': safe(FLGF_RING[i]),
-                'FLIG_SWITCH': safe(FLIG_SWITCH[i]),
-                'FLIM_SWITCH': safe(FLIM_SWITCH[i]),
+                'FLGF': safe(FLGF_RING[i]),
+                'FLIG': safe(FLIG_SWITCH[i]),
+                'FLIM': safe(FLIM_SWITCH[i]),
                 'FlhB': safe(FlhB[i]),
                 'FlhA': safe(FlhA[i]),
                 'FliR': safe(FliR[i]),
@@ -238,11 +249,21 @@ def plot(
             }
         }
 
+        # for compart_id, compart_dict in compartments.items():
+        #     total = compart_dict.pop('total')
+        #     used = sum(list(compart_dict.values()))
+        #     remaining = total - used
+        #     compart_dict[compart_id] = remaining
+
+
+
+        # Guard against negative remainders when computing the "other" mass
         for compart_id, compart_dict in compartments.items():
             total = compart_dict.pop('total')
             used = sum(list(compart_dict.values()))
             remaining = total - used
-            compart_dict[compart_id] = remaining
+            # If remaining is negative or near-zero, clamp it
+            compart_dict[compart_id] = safe(remaining)  # use safe() here too!
 
         dictionaries.append(compartments)
 
@@ -251,17 +272,31 @@ def plot(
     initial_dict = dictionaries[0]
     final_dict = dictionaries[1]
 
+    COLORS.clear()
+    COLORS.extend([
+        [1.0, 0.506, 0.016],  # extracellular  - orange
+        [0.463, 0.361, 0.620],  # periplasm       - purple
+        [0.498, 0.725, 0.357],  # cytosol         - green
+        [1.0, 1.0, 0.329],  # pilus           - yellow
+        [0.729, 0.459, 0.341],  # outer_membrane  - brown
+        [0.937, 0.616, 0.851],  # projection      - pink/magenta
+        [0.863, 0.255, 0.282],  # membrane        - yellow
+        [0.314, 0.655, 0.769],  # inner_membrane  - red
+        [0.20, 0.45, 0.85],  # flagellum       - blue (new)
+    ])
+
+    # Extend with extra colors for sub-compartment polygons (layered voronoi)
     extra_colors = [list(plt.cm.tab20(i % 20))[:3] for i in range(200)] + \
                    [list(np.random.rand(3)) for _ in range(200)]
-
     COLORS.extend(extra_colors)
+
 
     vm = VoronoiMaster()
     vm.plot(
         [[initial_dict, final_dict]],
         title=[["Initial biomass components", "Final biomass components"]],
         ax_shape=(1, 2),
-        chained=True,
+        chained=False,
         font_size=2,
     )
 

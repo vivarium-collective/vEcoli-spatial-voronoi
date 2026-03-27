@@ -112,28 +112,58 @@ def plot(
 
     # Replace the entire COLORS list
     # Base colors (one per compartment) - this is to keep the colors for each compartment the same
-    # Base pastel colors (one per compartment)
+    # # Base pastel colors (one per compartment)
+    # base_colors = [
+    #     np.array([255, 200, 120]) / 255,  # extracellular - light beige - light ornage now
+    #     np.array([204, 187, 222]) / 255,  # periplasm - soft green - lavender now
+    #     np.array([168, 216, 185]) / 255,  # cytosol - soft blue - soft green now
+    #     np.array([248, 231, 165]) / 255,  # pilus - soft pink - pale yellow now
+    #     np.array([181, 146, 104]) / 255,  # outer_membrane - pale yellow - light brown now
+    #     np.array([244, 184, 208]) / 255,  # projection - powder blue - soft pink now
+    #     np.array([255, 204, 153]) / 255,  # membrane - peach
+    #     np.array([173, 197, 232]) / 255,  # inner_membrane - lavender - soft blue now
+    #     np.array([242, 169, 159]) / 255,  # flagellum - muted coral
+    # ]
+
+    # # # Base pastel colors (one per compartment) - original colors
+    # base_colors = [
+    #     np.array([200, 210, 195]) / 255,  # extracellular - light beige
+    #     np.array([168, 216, 185]) / 255,  # periplasm - soft green
+    #     np.array([173, 197, 232]) / 255,  # cytosol - soft blue
+    #     np.array([244, 184, 208]) / 255,  # pilus - soft pink
+    #     np.array([248, 231, 165]) / 255,  # outer_membrane - pale yellow
+    #     np.array([176, 224, 230]) / 255,  # projection - powder blue
+    #     np.array([255, 204, 153]) / 255,  # membrane - peach
+    #     np.array([204, 187, 222]) / 255,  # inner_membrane - lavender
+    #     np.array([242, 169, 159]) / 255,  # flagellum - muted coral
+    # ]
+
+
     base_colors = [
-        np.array([200, 210, 195]) / 255,  # extracellular - light beige
-        np.array([168, 216, 185]) / 255,  # periplasm - soft green
-        np.array([173, 197, 232]) / 255,  # cytosol - soft blue
-        np.array([244, 184, 208]) / 255,  # pilus - soft pink
-        np.array([248, 231, 165]) / 255,  # outer_membrane - pale yellow
-        np.array([176, 224, 230]) / 255,  # projection - powder blue
-        np.array([255, 204, 153]) / 255,  # membrane - peach
-        np.array([204, 187, 222]) / 255,  # inner_membrane - lavender
-        np.array([242, 169, 159]) / 255,  # flagellum - muted coral
+        [1, 0, 0],  # red
+        [0, 1, 0],  # green
+        [0, 0, 1],  # blue
+        [1, 1, 0],  # yellow
+        [1, 0, 1],  # magenta
+        [0, 1, 1],  # cyan
+        [0.5, 0, 0],  # dark red
+        [0, 0.5, 0],  # dark green
+        [0, 0, 0.5],  # dark blue
     ]
+    COLORS[:] = base_colors * 2
+
+    #haveing an issue with plotting --> the first color is going all over the plot
+
 
     # Repeat for initial + final so colors match
-    voronoi_plot_main.COLORS = base_colors * 2
+    #voronoi_plot_main.COLORS = base_colors * 2
 
     vm = VoronoiMaster()
     vm.plot(
         [[dic_initial, dic_final]],
         title=[["Initial biomass components", "Final biomass components"]],
         ax_shape=(1, 2),
-        chained=True,
+        chained=False,
         font_size=4,
     )
 

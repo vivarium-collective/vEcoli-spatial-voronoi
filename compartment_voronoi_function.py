@@ -123,7 +123,7 @@ def plot(
     FLGF_ROD = find_protein_mass("FLGF-FLAGELLAR-MOTOR-ROD-PROTEIN[j]")
     FLGH_RING = find_protein_mass("FLGH-FLAGELLAR-L-RING[j]")
     FLGI_RING = find_protein_mass("FLGI-FLAGELLAR-P-RING[j]")
-    FLGF_RING = find_protein_mass("FLIF-FLAGELLAR-MS-RING[i]")
+    FLIF_RING = find_protein_mass("FLIF-FLAGELLAR-MS-RING[i]")
     FLIG_SWITCH = find_protein_mass("FLIG-FLAGELLAR-SWITCH-PROTEIN[i]")
     FLIM_SWITCH = find_protein_mass("FLIM-FLAGELLAR-C-RING-SWITCH[i]")
     FLIN_SWITCH = find_protein_mass("FLIN-FLAGELLAR-C-RING-SWITCH[m]")
@@ -304,7 +304,7 @@ def plot(
             },
             'inner_membrane': {
                 'total': safe(inner_mem[i]),
-                'FLGF_RING': safe(FLGF_RING[i]),
+                'FLIF_RING': safe(FLIF_RING[i]),
                 'FLIG_SWITCH': safe(FLIG_SWITCH[i]),
                 'FLIM_SWITCH': safe(FLIM_SWITCH[i]),
                 'FlhB': safe(FlhB[i]),
@@ -330,7 +330,7 @@ def plot(
             total = compart_dict.pop('total')
             used = sum(list(compart_dict.values()))
             remaining = total - used
-            compart_dict[compart_id] = remaining
+            compart_dict[compart_id] = safe(remaining)
 
         dictionaries.append(compartments)
 
