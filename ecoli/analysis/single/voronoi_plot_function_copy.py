@@ -80,6 +80,11 @@ COLORS_256 = [
 ]  # From colorbrewer2.org, qualitative 8-class set 1
 COLORS = [[colorValue / 255.0 for colorValue in color] for color in COLORS_256]
 
+# Optional name-based color map: compartment_name -> [r, g, b].
+# When populated, top-level compartments are colored by name (robust to filtering)
+# and sub-polygons inherit their parent compartment's color.
+COMPARTMENT_COLOR_MAP: dict = {}
+
 
 def angle(v1, v2):
     def dot_product(v1, v2):
@@ -863,13 +868,28 @@ class VoronoiMaster(object):
 
         return error_all
 
-    def _generate_plot(self, voronoi_list, ax, counter=0):
+    def _generate_plot(self, voronoi_list, ax, counter=0, parent_color=None):
         """
         Generate the layered voronoi diagram.
+
+        parent_color: RGB array to use for all polygons at this level (sub-compartments
+        inherit their parent compartment's color). None at the top level.
         """
+        sub_count = 0  # counts sub-voronoi lists seen so far at this level
         for voronoi in voronoi_list:
             if isinstance(voronoi, list):
-                ax, counter = self._generate_plot(voronoi, ax, counter=counter + 1)
+                if parent_color is None:
+                    # Top level: determine this sub-voronoi's compartment color by name.
+                    top_voronoi = voronoi_list[0]
+                    comp_name = top_voronoi.points[sub_count]
+                    if COMPARTMENT_COLOR_MAP and comp_name in COMPARTMENT_COLOR_MAP:
+                        color = np.clip(np.array(COMPARTMENT_COLOR_MAP[comp_name], dtype=float), 0, 1)
+                    else:
+                        color = np.clip(np.array(COLORS[sub_count % len(COLORS)], dtype=float), 0, 1)
+                else:
+                    color = parent_color
+                sub_count += 1
+                ax, counter = self._generate_plot(voronoi, ax, counter=counter + 1, parent_color=color)
 
             else:
                 canvas_obj = voronoi.canvas_obj
@@ -886,7 +906,6 @@ class VoronoiMaster(object):
                     )
 
                 # plot polygons
-                # plot polygons
                 patches = []
                 colors_all = []
                 for poly_idx, polygon in enumerate(voronoi.polygons):
@@ -901,12 +920,16 @@ class VoronoiMaster(object):
                         zorder=2,
                     )
                     patches.append(polygon_plot_obj)
-                    colors = np.array(COLORS[poly_idx % len(COLORS)], dtype=float)
-                    colors = np.clip(colors, 0, 1)
+                    if parent_color is not None:
+                        # Sub-compartment: all polygons share the parent compartment color.
+                        colors = parent_color
+                    elif COMPARTMENT_COLOR_MAP and hasattr(voronoi, 'points') and poly_idx < len(voronoi.points) and voronoi.points[poly_idx] in COMPARTMENT_COLOR_MAP:
+                        colors = np.clip(np.array(COMPARTMENT_COLOR_MAP[voronoi.points[poly_idx]], dtype=float), 0, 1)
+                    else:
+                        colors = np.clip(np.array(COLORS[poly_idx % len(COLORS)], dtype=float), 0, 1)
                     colors_all.append(colors)
                 p = PatchCollection(patches, facecolors=colors_all, alpha=1)
                 ax.add_collection(p)
-
 
         return ax, counter
 

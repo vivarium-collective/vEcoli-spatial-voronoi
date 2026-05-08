@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 # Replaced voronoi function because wanted to edit it without changing master
 from ecoli.analysis.single.voronoi_plot_function_copy import VoronoiMaster
-from ecoli.analysis.single.voronoi_plot_function_copy import COLORS
+from ecoli.analysis.single.voronoi_plot_function_copy import COMPARTMENT_COLOR_MAP
 
 
 def plot(
@@ -116,18 +116,6 @@ def plot(
     #flagella_masses = find_mass_group(flagella_monomers)
 
 
-#Function because tiny numbers and Voronoi function cannot hangle zero or negative values
-        #converts the value to a float, returns the original value unless extremely tiny
-        #if less than 1e20, force it to be 1e20
-    # def safe(x):
-    #     x = float(x)
-    #     return x if x > 1e-20 else 1e-20
-
-        # Raise the safe() floor significantly - 1e-20 is dangerously small for Voronoi
-    def safe(x):
-        x = float(x)
-        return x if x > 1e-6 else 1e-6  # or even 1e-3 depending on your mass scale
-
 #listener/compartment masses
     extracellular = voronoi_data["listeners__mass__extracellular_mass"]
     periplasm = voronoi_data["listeners__mass__periplasm_mass"]
@@ -186,84 +174,36 @@ def plot(
     FliD = find_protein_mass("EG10841-MONOMER[e]")
 
 
+    # t=10 min (600 s) gives proteins time to be expressed; use last timepoint as final
+    t10_idx = int((voronoi_data["time"] - 600.0).abs().arg_min())
+
     dictionaries = []
-    for i in [0, -1]:
-        compartments = {
-            'extracellular': {
-                'total': safe(extracellular[i]),
-                'Flgk': safe(FlgK[i]),
-                'FlgL': safe(FlgL[i]),
-                'FliC': safe(FliC[i]),
-                'FliD': safe(FliD[i]),
-            },
-            'flagellum': {
-                'total': safe(flagellum[i]),
-            },
-            'periplasm': {
-                'total': safe(periplasm[i]),
-                'FliE': safe(FliE[i]),
-            },
-            'cytosol': {
-                'total': safe(cytosol[i]),
-                'FliJ': safe(FliJ[i]),
-                'Flil': safe(Flil[i]),
-                'FliH': safe(FliH[i]),
-                'FlgE': safe(FlgE[i]),
-            #    },
-            # 'pilus': {
-            #     'total': safe(pilus[i]), #NOTE: when this is not commented out, we get an error
-            },
-            'outer_membrane': {
-                'total': safe(outer_mem[i]),
-                'FLGG': safe(FLGG[i]),
-            },
-            'projection': {
-                'total': safe(projection[i]),
-                'FLGB': safe(FLGB[i]),
-                'FLGC': safe(FLGC[i]),
-                'FLGF': safe(FLGF[i]),
-                'FLGH': safe(FLGH_RING[i]),
-                'FLGI': safe(FLGI_RING[i]),
-                'FliQ': safe(FliQ[i]),
-                'FliO': safe(FliO[i]),
-                #'Flg_export_app': safe(Flg_Export_app[i]),
-                'FliL': safe(FliL[i]),
-                #'Flg_Motor': safe(Flg_Motor[i]),
-                #'Flagellum': safe(Flagellum[i]),
-            },
-            'membrane': {
-                'total': safe(membrane[i]),
-                'FLIN': safe(FLIN_SWITCH[i]),
-            },
-            'inner_membrane': {
-                'total': safe(inner_mem[i]),
-                'FLGF': safe(FLGF_RING[i]),
-                'FLIG': safe(FLIG_SWITCH[i]),
-                'FLIM': safe(FLIM_SWITCH[i]),
-                'FlhB': safe(FlhB[i]),
-                'FlhA': safe(FlhA[i]),
-                'FliR': safe(FliR[i]),
-                'FliP': safe(FliP[i]),
-                'MotA': safe(MotA[i]),
-                'MotB': safe(MotB[i]),
-            }
+    for i in [t10_idx, -1]:
+        raw = {
+            'extracellular': (extracellular, {'Flgk': FlgK, 'FlgL': FlgL, 'FliC': FliC, 'FliD': FliD}),
+            'periplasm':     (periplasm,     {'FliE': FliE}),
+            'cytosol':       (cytosol,       {'FliJ': FliJ, 'Flil': Flil, 'FliH': FliH, 'FlgE': FlgE}),
+            'outer_membrane':(outer_mem,     {'FLGG': FLGG}),
+            'projection':    (projection,    {'FLGB': FLGB, 'FLGC': FLGC, 'FLGF': FLGF,
+                                              'FLGH': FLGH_RING, 'FLGI': FLGI_RING,
+                                              'FliQ': FliQ, 'FliO': FliO, 'FliL': FliL}),
+            'membrane':      (membrane,      {'FLIN': FLIN_SWITCH}),
+            'inner_membrane':(inner_mem,     {'FLGF': FLGF_RING, 'FLIG': FLIG_SWITCH,
+                                              'FLIM': FLIM_SWITCH, 'FlhB': FlhB, 'FlhA': FlhA,
+                                              'FliR': FliR, 'FliP': FliP,
+                                              'MotA': MotA, 'MotB': MotB}),
+            'flagellum':     (flagellum,     {}),
         }
 
-        # for compart_id, compart_dict in compartments.items():
-        #     total = compart_dict.pop('total')
-        #     used = sum(list(compart_dict.values()))
-        #     remaining = total - used
-        #     compart_dict[compart_id] = remaining
-
-
-
-        # Guard against negative remainders when computing the "other" mass
-        for compart_id, compart_dict in compartments.items():
-            total = compart_dict.pop('total')
-            used = sum(list(compart_dict.values()))
-            remaining = total - used
-            # If remaining is negative or near-zero, clamp it
-            compart_dict[compart_id] = safe(remaining)  # use safe() here too!
+        compartments = {}
+        for compart_id, (total_series, proteins) in raw.items():
+            total = float(total_series[i])
+            sub = {k: float(v[i]) for k, v in proteins.items() if float(v[i]) > 0}
+            remaining = total - sum(sub.values())
+            if remaining > 0:
+                sub[compart_id] = remaining
+            if sub:
+                compartments[compart_id] = sub
 
         dictionaries.append(compartments)
 
@@ -272,29 +212,23 @@ def plot(
     initial_dict = dictionaries[0]
     final_dict = dictionaries[1]
 
-    COLORS.clear()
-    COLORS.extend([
-        [1.0, 0.506, 0.016],  # extracellular  - orange
-        [0.463, 0.361, 0.620],  # periplasm       - purple
-        [0.498, 0.725, 0.357],  # cytosol         - green
-        [1.0, 1.0, 0.329],  # pilus           - yellow
-        [0.729, 0.459, 0.341],  # outer_membrane  - brown
-        [0.937, 0.616, 0.851],  # projection      - pink/magenta
-        [0.863, 0.255, 0.282],  # membrane        - yellow
-        [0.314, 0.655, 0.769],  # inner_membrane  - red
-        [0.20, 0.45, 0.85],  # flagellum       - blue (new)
-    ])
-
-    # Extend with extra colors for sub-compartment polygons (layered voronoi)
-    extra_colors = [list(plt.cm.tab20(i % 20))[:3] for i in range(200)] + \
-                   [list(np.random.rand(3)) for _ in range(200)]
-    COLORS.extend(extra_colors)
+    COMPARTMENT_COLOR_MAP.clear()
+    COMPARTMENT_COLOR_MAP.update({
+        'extracellular':  [1.0, 0.506, 0.016],   # orange
+        'periplasm':      [0.463, 0.361, 0.620],  # purple
+        'cytosol':        [0.498, 0.725, 0.357],  # green
+        'outer_membrane': [0.729, 0.459, 0.341],  # brown
+        'projection':     [0.937, 0.616, 0.851],  # pink
+        'membrane':       [0.863, 0.255, 0.282],  # red
+        'inner_membrane': [0.314, 0.655, 0.769],  # light blue
+        'flagellum':      [0.20, 0.45, 0.85],     # dark blue
+    })
 
 
     vm = VoronoiMaster()
     vm.plot(
         [[initial_dict, final_dict]],
-        title=[["Initial biomass components", "Final biomass components"]],
+        title=[["Biomass components (t=10 min)", "Final biomass components"]],
         ax_shape=(1, 2),
         chained=False,
         font_size=2,
